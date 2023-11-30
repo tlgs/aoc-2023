@@ -1,0 +1,8 @@
+.direnv/
+.envrc
+
+__pycache__/
+
+profile.*
+
+data/
