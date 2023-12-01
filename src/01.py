@@ -1,3 +1,4 @@
+import functools
 import sys
 
 
@@ -6,40 +7,31 @@ def parse_input(puzzle_input):
 
 
 def part_one(parsed_input):
-    values = []
+    total = 0
     for line in parsed_input:
-        raw_ints = list(filter(str.isdigit, line))
-        values.append(int(raw_ints[0] + raw_ints[-1]))
-    return sum(values)
+        raw = [int(c) for c in line if c.isdigit()]
+        total += raw[0] * 10 + raw[-1]
+
+    return total
 
 
 def part_two(parsed_input):
-    spelled = {
-        "one": "1",
-        "two": "2",
-        "three": "3",
-        "four": "4",
-        "five": "5",
-        "six": "6",
-        "seven": "7",
-        "eight": "8",
-        "nine": "9",
-    }
-    values = []
-    for line in parsed_input:
-        raw_ints = []
-        for i, c in enumerate(line):
-            for k in spelled:
-                if line[i:].startswith(k):
-                    raw_ints.append(spelled[k])
-                    break
-
-            if c.isdigit():
-                raw_ints.append(c)
-
-        values.append(int(raw_ints[0] + raw_ints[-1]))
-
-    return sum(values)
+    pairs = [
+        ("one", "o1e"),
+        ("two", "t2o"),
+        ("three", "t3e"),
+        ("four", "4"),
+        ("five", "5e"),
+        ("six", "6"),
+        ("seven", "7"),
+        ("eight", "e8t"),
+        ("nine", "n9e"),
+    ]
+    mangled = [
+        functools.reduce(lambda x, y: x.replace(*y), pairs, line)
+        for line in parsed_input
+    ]
+    return part_one(mangled)
 
 
 class Test:
