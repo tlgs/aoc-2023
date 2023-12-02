@@ -1,55 +1,31 @@
+import math
+import re
 import sys
+from collections import defaultdict
 
 
 def parse_input(puzzle_input):
-    games = []
-    for i, line in enumerate(puzzle_input.splitlines(), start=1):
-        label, reveals = line.split(": ")
+    bags = []
+    for line in puzzle_input.splitlines():
+        maximums = defaultdict(int)
+        for n, c in re.findall(r"(\d+) (\w+)", line):
+            maximums[c] = max(maximums[c], int(n))
 
-        _, id_ = label.split()
-        assert i == int(id_)
+        bags.append(maximums)
 
-        sets = []
-        for reveal in reveals.split("; "):
-            r = g = b = 0
-            for cubes in reveal.split(", "):
-                match cubes.split():
-                    case [x, "red"]:
-                        r = int(x)
-                    case [x, "green"]:
-                        g = int(x)
-                    case [x, "blue"]:
-                        b = int(x)
-
-            sets.append((r, g, b))
-
-        games.append(sets)
-
-    return (games,)
+    return (bags,)
 
 
-def part_one(games):
-    total = 0
-    for i, game in enumerate(games, start=1):
-        for r, g, b in game:
-            if r > 12 or g > 13 or b > 14:
-                break
-        else:
-            total += i
-
-    return total
+def part_one(bags):
+    return sum(
+        i + 1
+        for i, d in enumerate(bags)
+        if d["red"] < 13 and d["green"] < 14 and d["blue"] < 15
+    )
 
 
-def part_two(games):
-    total = 0
-    for game in games:
-        mr = mg = mb = 0
-        for r, g, b in game:
-            mr, mg, mb = max(mr, r), max(mg, g), max(mb, b)
-
-        total += mr * mg * mb
-
-    return total
+def part_two(bags):
+    return sum(math.prod(bag.values()) for bag in bags)
 
 
 class Test:
