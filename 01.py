@@ -6,16 +6,16 @@ def parse_input(puzzle_input):
     return (puzzle_input.splitlines(),)
 
 
-def part_one(parsed_input):
+def part_one(document):
     total = 0
-    for line in parsed_input:
+    for line in document:
         raw = [int(c) for c in line if c.isdigit()]
         total += raw[0] * 10 + raw[-1]
 
     return total
 
 
-def part_two(parsed_input):
+def part_two(document):
     pairs = [
         ("one", "o1e"),
         ("two", "t2o"),
@@ -28,8 +28,7 @@ def part_two(parsed_input):
         ("nine", "n9e"),
     ]
     mangled = [
-        functools.reduce(lambda x, y: x.replace(*y), pairs, line)
-        for line in parsed_input
+        functools.reduce(lambda x, y: x.replace(*y), pairs, line) for line in document
     ]
     return part_one(mangled)
 
