@@ -3,37 +3,34 @@ import sys
 from collections import defaultdict
 
 
-def adjacent(start, end, y):
-    yield start - 1, y
-    yield end, y
-
-    for x in range(start - 1, end + 1):
-        yield x, y - 1
-        yield x, y + 1
-
-
 def parse_input(puzzle_input):
-    numbers, symbols = defaultdict(list), {}
+    edges, symbols = defaultdict(list), {}
     for y, row in enumerate(puzzle_input.splitlines()):
-        for m in re.finditer(r"(\d+)", row):
-            for a in adjacent(*m.span(), y):
-                numbers[a].append(int(m.group()))
+        for m in re.finditer(r"\d+", row):
+            number = int(m.group())
 
-        for m in re.finditer(r"([^\d\.])", row):
+            start, end = m.span()
+            edges[start - 1, y].append(number)
+            edges[end, y].append(number)
+            for x in range(start - 1, end + 1):
+                edges[x, y - 1].append(number)
+                edges[x, y + 1].append(number)
+
+        for m in re.finditer(r"[^\d\.]", row):
             symbols[m.start(), y] = m.group()
 
-    return numbers, symbols
+    return edges, symbols
 
 
-def part_one(numbers, symbols):
-    matches = numbers.keys() & symbols.keys()
-    return sum(sum(numbers[k]) for k in matches)
+def part_one(edges, symbols):
+    matches = edges.keys() & symbols.keys()
+    return sum(sum(edges[k]) for k in matches)
 
 
-def part_two(numbers, symbols):
-    two = {k for k, v in numbers.items() if len(v) == 2}
+def part_two(edges, symbols):
+    two = {k for k, v in edges.items() if len(v) == 2}
     stars = {k for k, v in symbols.items() if v == "*"}
-    return sum(numbers[k][0] * numbers[k][1] for k in two & stars)
+    return sum(edges[k][0] * edges[k][1] for k in two & stars)
 
 
 class Test:
