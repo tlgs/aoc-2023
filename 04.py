@@ -1,4 +1,5 @@
 import sys
+from functools import cache
 
 
 def parse_input(puzzle_input):
@@ -20,14 +21,12 @@ def part_one(cards):
 
 def part_two(cards):
     w = {i: list(range(i + 1, i + 1 + len(a & b))) for i, (a, b) in enumerate(cards)}
-    total, stack = 0, list(range(len(cards)))
-    while stack:
-        curr = stack.pop()
-        total += 1
 
-        stack.extend(w[curr])
+    @cache
+    def f(i):
+        return 1 + sum(f(j) for j in w[i])
 
-    return total
+    return sum(f(i) for i in w)
 
 
 class Test:
