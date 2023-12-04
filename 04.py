@@ -3,30 +3,27 @@ from functools import cache
 
 
 def parse_input(puzzle_input):
-    cards = []
+    matches = []
     for line in puzzle_input.splitlines():
         _, rest = line.split(": ")
         fst, snd = rest.split(" | ")
-        winning = {int(n) for n in fst.split()}
-        numbers = {int(n) for n in snd.split()}
 
-        cards.append((winning, numbers))
+        fst, snd = map(lambda seq: set(map(int, seq.split())), [fst, snd])
+        matches.append(len(fst & snd))
 
-    return (cards,)
-
-
-def part_one(cards):
-    return sum(2 ** (n - 1) for a, b in cards if (n := len(a & b)))
+    return (matches,)
 
 
-def part_two(cards):
-    w = {i: list(range(i + 1, i + 1 + len(a & b))) for i, (a, b) in enumerate(cards)}
+def part_one(matches):
+    return sum(2 ** (n - 1) for n in matches if n > 0)
 
+
+def part_two(matches):
     @cache
     def f(i):
-        return 1 + sum(f(j) for j in w[i])
+        return 1 + sum(f(j) for j in range(i + 1, i + 1 + matches[i]))
 
-    return sum(f(i) for i in w)
+    return sum(f(i) for i, _ in enumerate(matches))
 
 
 class Test:
