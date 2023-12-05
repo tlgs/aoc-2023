@@ -1,63 +1,62 @@
-import itertools
 import sys
 
 
 def parse_input(puzzle_input):
     fst, rest = puzzle_input.split("\n\n", maxsplit=1)
-    seeds = [int(v) for v in fst.split(": ")[1].split()]
+
+    _, numbers = fst.split(": ")
+    seeds = list(map(int, numbers.split()))
 
     mappings = []
     for chunk in rest.split("\n\n"):
         current = []
         _, *lines = chunk.splitlines()
         for line in lines:
-            destination, source, length = map(int, line.split())
-            current.append((range(source, source + length), destination))
+            current.append(tuple(map(int, line.split())))
 
-        mappings.append(current)
+        mappings.append(sorted(current, key=lambda t: t[1]))
 
     return (seeds, mappings)
 
 
+def run(intervals, mappings):
+    for mapping in mappings:
+        current = []
+        for start, length in intervals:
+            for dst, src, sz in mapping:
+                # no possible match for next fragment
+                if length > 0 and src > start:
+                    filler = min(src - start, length)
+                    current.append((start, filler))
+
+                    start, length = start + filler, length - filler
+
+                # found a matching interval
+                if src <= start < src + sz:
+                    offset = start - src
+
+                    remaining = min(sz - offset, length)
+                    current.append((dst + offset, remaining))
+
+                    start, length = start + remaining, length - remaining
+
+            # remaining fragment left to map
+            if length > 0:
+                current.append((start, length))
+
+        intervals = current
+
+    return min(s for s, _ in intervals)
+
+
 def part_one(seeds, mappings):
-    best = sys.maxsize
-    for x in seeds:
-        for mapping in mappings:
-            for source_range, destination in mapping:
-                if x in source_range:
-                    x = destination + source_range.index(x)
-                    break
-
-        best = min(best, x)
-
-    return best
+    intervals = [(n, 1) for n in seeds]
+    return run(intervals, mappings)
 
 
 def part_two(seeds, mappings):
-    inverse = []
-    for mapping in mappings[::-1]:
-        current = []
-        for source_range, destination in mapping:
-            length = source_range.stop - source_range.start
-            current.append(
-                (range(destination, destination + length), source_range.start)
-            )
-
-        inverse.append(current)
-
-    valid = [range(a, a + b) for a, b in zip(seeds[::2], seeds[1::2])]
-    for i in itertools.count():
-        x = i
-        for mapping in inverse:
-            for source_range, destination in mapping:
-                if x in source_range:
-                    x = destination + source_range.index(x)
-                    break
-
-        if any(x in r for r in valid):
-            return i
-
-    raise RuntimeError
+    intervals = list(zip(seeds[::2], seeds[1::2]))
+    return run(intervals, mappings)
 
 
 class Test:
