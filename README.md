@@ -7,4 +7,4 @@
 | 3   | [Gear Ratios](03.py)                       | -             |
 | 4   | [Scratchcards](04.py)                      | -             |
 | 5   | [If You Give A Seed A Fertilizer](05.py)   | Intervals     |
-| 6   | [Wait For It](06.py)                       | Binary search |
+| 6   | [Wait For It](06.py)                       | Math          |

@@ -1,38 +1,31 @@
+import math
 import re
 import sys
-from functools import reduce
-from itertools import repeat
-from operator import add
 
 
 def parse_input(puzzle_input):
-    t, d = map(re.findall, repeat(r"\d+"), puzzle_input.splitlines())
+    fst, snd = puzzle_input.splitlines()
+    t, d = re.findall(r"\d+", fst), re.findall(r"\d+", snd)
     return (t, d)
+
+
+def root_diff(a, b, c):
+    x = (-b + (b**2 - 4 * a * c) ** 0.5) / (2 * a)
+    y = (-b - (b**2 - 4 * a * c) ** 0.5) / (2 * a)
+    return math.ceil(x) - math.floor(y) - 1
 
 
 def part_one(times, distances):
     count = 1
-    for t, d in zip(map(int, times), map(int, distances)):
-        i = 0
-        while i * (t - i) <= d:
-            i += 1
-        count *= (t // 2 - i + 1) * 2 - (t % 2 == 0)
+    for t, d in zip(times, distances):
+        count *= root_diff(1, -int(t), int(d))
 
     return count
 
 
 def part_two(times, distances):
-    t, d = map(int, map(reduce, repeat(add), (times, distances)))
-
-    lo, hi = 1, t
-    while lo <= hi:
-        mid = lo + (hi - lo) // 2
-        if mid * (t - mid) > d:
-            hi = mid - 1
-        else:
-            lo = mid + 1
-
-    return (t // 2 - lo + 1) * 2 - (t % 2 == 0)
+    t, d = "".join(times), "".join(distances)
+    return root_diff(1, -int(t), int(d))
 
 
 class Test:
