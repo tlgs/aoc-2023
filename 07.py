@@ -63,7 +63,7 @@ QQQJA 483
 def main():
     puzzle = parse_input(sys.stdin.read())
 
-    print("part 1:", part_one(*puzzle))  # NOT: 251036598
+    print("part 1:", part_one(*puzzle))
     print("part 2:", part_two(*puzzle))
 
 
