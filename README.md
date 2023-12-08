@@ -9,3 +9,4 @@
 | 5   | [If You Give A Seed A Fertilizer](05.py)   | Intervals     |
 | 6   | [Wait For It](06.py)                       | Math          |
 | 7   | [Camel Cards](07.py)                       | -             |
+| 8   | [Haunted Wasteland](08.py)                 | -             |
