@@ -21,30 +21,26 @@ def parse_input(puzzle_input):
 
 def run(intervals, mappings):
     for mapping in mappings:
-        current = []
-        for start, length in intervals:
+        chunks = []
+        for start, size in intervals:
             for dst, src, sz in mapping:
-                # no possible match for next fragment
-                if length > 0 and src > start:
-                    filler = min(src - start, length)
-                    current.append((start, filler))
+                if src > start:
+                    chunk_size = min(src - start, size)
+                    chunks.append((start, chunk_size))
+                    start, size = start + chunk_size, size - chunk_size
 
-                    start, length = start + filler, length - filler
-
-                # found a matching interval
                 if src <= start < src + sz:
-                    offset = start - src
+                    chunk_size = min(src + sz - start, size)
+                    chunks.append((dst + start - src, chunk_size))
+                    start, size = start + chunk_size, size - chunk_size
 
-                    remaining = min(sz - offset, length)
-                    current.append((dst + offset, remaining))
+                if not size:
+                    break
 
-                    start, length = start + remaining, length - remaining
+            else:
+                chunks.append((start, size))
 
-            # remaining fragment left to map
-            if length > 0:
-                current.append((start, length))
-
-        intervals = current
+        intervals = chunks
 
     return min(s for s, _ in intervals)
 
