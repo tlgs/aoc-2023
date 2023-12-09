@@ -16,7 +16,7 @@ def part_one(histories):
     total = 0
     for values in histories:
         diffs, stack = values[:], [values[-1]]
-        while sum(diffs := [b - a for a, b in pairwise(diffs)]) != 0:
+        while any(diffs := [b - a for a, b in pairwise(diffs)]):
             stack.append(diffs[-1])
 
         total += sum(stack)
@@ -28,7 +28,7 @@ def part_two(histories):
     total = 0
     for values in histories:
         diffs, stack = values[:], [values[0]]
-        while sum(diffs := [b - a for a, b in pairwise(diffs)]) != 0:
+        while any(diffs := [b - a for a, b in pairwise(diffs)]):
             stack.append(diffs[0])
 
         total += reduce(lambda a, b: b - a, stack[::-1])
