@@ -10,3 +10,4 @@
 | 6   | [Wait For It](06.py)                       | Math          |
 | 7   | [Camel Cards](07.py)                       | -             |
 | 8   | [Haunted Wasteland](08.py)                 | -             |
+| 9   | [Mirage Maintenance](09.py)                | -             |
