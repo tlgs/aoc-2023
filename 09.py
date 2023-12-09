@@ -1,11 +1,12 @@
-import itertools
 import sys
+from functools import reduce
+from itertools import pairwise
 
 
 def parse_input(puzzle_input):
     histories = []
     for line in puzzle_input.splitlines():
-        values = tuple(int(c) for c in line.split())
+        values = list(map(int, line.split()))
         histories.append(values)
 
     return (histories,)
@@ -13,15 +14,10 @@ def parse_input(puzzle_input):
 
 def part_one(histories):
     total = 0
-    for history in histories:
-        stack = [history[-1]]
-        while sum(history) != 0:
-            diffs = []
-            for a, b in itertools.pairwise(history):
-                diffs.append(b - a)
-
+    for values in histories:
+        diffs, stack = values[:], [values[-1]]
+        while sum(diffs := [b - a for a, b in pairwise(diffs)]) != 0:
             stack.append(diffs[-1])
-            history = diffs
 
         total += sum(stack)
 
@@ -30,21 +26,12 @@ def part_one(histories):
 
 def part_two(histories):
     total = 0
-    for history in histories:
-        stack = [history[0]]
-        while sum(history) != 0:
-            diffs = []
-            for a, b in itertools.pairwise(history):
-                diffs.append(b - a)
-
+    for values in histories:
+        diffs, stack = values[:], [values[0]]
+        while sum(diffs := [b - a for a, b in pairwise(diffs)]) != 0:
             stack.append(diffs[0])
-            history = diffs
 
-        curr = stack.pop()
-        while stack:
-            curr = stack.pop() - curr
-
-        total += curr
+        total += reduce(lambda a, b: b - a, stack[::-1])
 
     return total
 
