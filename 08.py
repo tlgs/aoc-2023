@@ -1,4 +1,5 @@
 import itertools
+import math
 import re
 import sys
 
@@ -26,7 +27,31 @@ def part_one(instructions, network):
 
 
 def part_two(instructions, network):
-    return 0
+    n = len(instructions)
+    starts = [node for node in network if node[-1] == "A"]
+    found = []
+    for start in starts:
+        curr, seen = start, {start: 0}
+        interesting = []
+        for i, instr in enumerate(itertools.cycle(instructions)):
+            curr = network[curr][instr]
+            if (curr, i % n) in seen:
+                break
+
+            seen[(curr, i % n)] = i + 1
+            if curr[-1] == "Z":
+                interesting.append((i + 1, curr))
+
+        assert len(interesting) == 1
+
+        marker = (curr, i % n)
+        cycle_start = seen[marker]
+        cycle_length = len(seen) - cycle_start
+
+        assert interesting[0][0] == cycle_length
+        found.append(cycle_length)
+
+    return math.lcm(*found)
 
 
 class Test:
