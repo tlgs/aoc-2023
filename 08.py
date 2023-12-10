@@ -1,7 +1,7 @@
-import itertools
 import math
 import re
 import sys
+from itertools import cycle
 
 
 def parse_input(puzzle_input):
@@ -18,40 +18,33 @@ def parse_input(puzzle_input):
 
 def part_one(instructions, network):
     i, curr = 0, "AAA"
-    instructions = itertools.cycle(instructions)
-    while curr != "ZZZ":
-        i += 1
-        curr = network[curr][next(instructions)]
+    for i, direction in enumerate(cycle(instructions), start=1):
+        if (curr := network[curr][direction]) == "ZZZ":
+            break
 
     return i
 
 
 def part_two(instructions, network):
-    n = len(instructions)
-    starts = [node for node in network if node[-1] == "A"]
-    found = []
-    for start in starts:
-        curr, seen = start, {start: 0}
-        interesting = []
-        for i, instr in enumerate(itertools.cycle(instructions)):
-            curr = network[curr][instr]
-            if (curr, i % n) in seen:
+    """
+    This one is sort of messed up as the input data is carefully crafted
+    such that the problem is significantly easier:
+      - There's a single **Z node in each loop
+      - The **Z node is hit exacly at every multiple of the cycle length
+
+    I figured this out by iteratively looking at the loop starts and lengths,
+    and the **Z node index. A general solution for the described problem would have
+    been much more complicated.
+    """
+    lengths = []
+    for curr in filter(lambda node: node.endswith("A"), network):
+        for i, direction in enumerate(cycle(instructions), start=1):
+            if (curr := network[curr][direction]).endswith("Z"):
                 break
 
-            seen[(curr, i % n)] = i + 1
-            if curr[-1] == "Z":
-                interesting.append((i + 1, curr))
+        lengths.append(i)
 
-        assert len(interesting) == 1
-
-        marker = (curr, i % n)
-        cycle_start = seen[marker]
-        cycle_length = len(seen) - cycle_start
-
-        assert interesting[0][0] == cycle_length
-        found.append(cycle_length)
-
-    return math.lcm(*found)
+    return math.lcm(*lengths)
 
 
 class Test:
