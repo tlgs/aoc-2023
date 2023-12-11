@@ -12,3 +12,4 @@
 | 8   | [Haunted Wasteland](08.py)                 | Cycle-finding |
 | 9   | [Mirage Maintenance](09.py)                | -             |
 | 10  | [Pipe Maze](10.py)                         | Geometry      |
+| 11  | [Cosmic Expansion](11.py)                  | -             |
