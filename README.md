@@ -11,3 +11,4 @@
 | 7   | [Camel Cards](07.py)                       | -             |
 | 8   | [Haunted Wasteland](08.py)                 | Cycle-finding |
 | 9   | [Mirage Maintenance](09.py)                | -             |
+| 10  | [Pipe Maze](10.py)                         | Geometry      |
