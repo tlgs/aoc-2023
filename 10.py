@@ -1,4 +1,5 @@
 import sys
+from itertools import pairwise
 
 
 def neighbors(x, y, shape):
@@ -66,7 +67,7 @@ def part_two(path, tiles):
     v = [t for t in path if tiles[t] not in "|-"]
 
     # Shoelace formula: <https://en.wikipedia.org/wiki/Shoelace_formula>
-    area = abs(sum(a * d - b * c for (a, c), (b, d) in zip(v, v[1:] + v[:1]))) // 2
+    area = abs(sum(a * d - b * c for (a, c), (b, d) in pairwise(v + v[:1]))) // 2
 
     # Pick's theorem: <https://en.wikipedia.org/wiki/Pick%27s_theorem>
     return area - len(path) // 2 + 1
