@@ -1,61 +1,42 @@
+import bisect
 import itertools
 import sys
 
 
 def parse_input(puzzle_input):
+    lines = puzzle_input.splitlines()
+    max_y, max_x = len(lines), len(lines[0])
+
     galaxies = set()
-    for y, row in enumerate(puzzle_input.splitlines()):
+    ax, ay = set(range(max_x)), set(range(max_y))
+    for y, row in enumerate(lines):
         for x, c in enumerate(row):
             if c == "#":
                 galaxies.add((x, y))
+                ax.discard(x)
+                ay.discard(y)
 
-    return (galaxies,)
+    # solving the problem here to avoid looping twice :^)
+    empty_x, empty_y = sorted(ax), sorted(ay)
+    part_one, partials = 0, []
+    for (xa, ya), (xb, yb) in itertools.combinations(galaxies, 2):
+        dx, dy = abs(xa - xb), abs(ya - yb)
 
+        cx = abs(bisect.bisect(empty_x, xa) - bisect.bisect(empty_x, xb))
+        cy = abs(bisect.bisect(empty_y, ya) - bisect.bisect(empty_y, yb))
 
-def part_one(galaxies):
-    mx, my = max(x for x, _ in galaxies), max(y for _, y in galaxies)
+        part_one += dx + cx + dy + cy
+        partials.append((dx + dy, cx + cy))
 
-    ax, ay = set(range(mx + 1)), set(range(my + 1))
-    for x, y in galaxies:
-        ax.discard(x)
-        ay.discard(y)
-
-    marked_x, marked_y = sorted(ax), sorted(ay)
-
-    total = 0
-    for a, b in itertools.combinations(galaxies, 2):
-        xa, xb = sorted((a[0], b[0]))
-        ya, yb = sorted((a[1], b[1]))
-
-        dx = xb - xa + sum(xa < x < xb for x in marked_x)
-        dy = yb - ya + sum(ya < y < yb for y in marked_y)
-
-        total += dx + dy
-
-    return total
+    return (part_one, partials)
 
 
-def part_two(galaxies, larger=1_000_000):
-    mx, my = max(x for x, _ in galaxies), max(y for _, y in galaxies)
+def part_one(answer, _):
+    return answer
 
-    ax, ay = set(range(mx + 1)), set(range(my + 1))
-    for x, y in galaxies:
-        ax.discard(x)
-        ay.discard(y)
 
-    marked_x, marked_y = sorted(ax), sorted(ay)
-
-    total = 0
-    for a, b in itertools.combinations(galaxies, 2):
-        xa, xb = sorted((a[0], b[0]))
-        ya, yb = sorted((a[1], b[1]))
-
-        dx = xb - xa + (larger - 1) * sum(xa < x < xb for x in marked_x)
-        dy = yb - ya + (larger - 1) * sum(ya < y < yb for y in marked_y)
-
-        total += dx + dy
-
-    return total
+def part_two(_, partials, m=1_000_000):
+    return sum(distance + (m - 1) * counts for distance, counts in partials)
 
 
 class Test:
