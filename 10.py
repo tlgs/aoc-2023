@@ -1,24 +1,4 @@
-import itertools
 import sys
-
-
-def parse_input(puzzle_input):
-    tiles, start = {}, None
-    for y, row in enumerate(puzzle_input.splitlines()):
-        for x, c in enumerate(row):
-            if c == "S":
-                start = (x, y)
-            tiles[(x, y)] = c
-
-    assert start is not None
-    return (start, tiles)
-
-
-def adjacent(x, y):
-    yield x, y - 1
-    yield x + 1, y
-    yield x, y + 1
-    yield x - 1, y
 
 
 def neighbors(x, y, shape):
@@ -30,16 +10,31 @@ def neighbors(x, y, shape):
         case "L":
             yield from [(x, y - 1), (x + 1, y)]
         case "J":
-            yield from [(x, y - 1), (x - 1, y)]
+            yield from [(x - 1, y), (x, y - 1)]
         case "7":
-            yield from [(x, y + 1), (x - 1, y)]
+            yield from [(x - 1, y), (x, y + 1)]
         case "F":
-            yield from [(x, y + 1), (x + 1, y)]
+            yield from [(x + 1, y), (x, y + 1)]
         case _:
             raise ValueError(shape)
 
 
-def deduct(north, east, south, west):
+def parse_input(puzzle_input):
+    tiles, start = {}, None
+    for y, row in enumerate(puzzle_input.splitlines()):
+        for x, c in enumerate(row):
+            if c == "S":
+                start = (x, y)
+            tiles[(x, y)] = c
+
+    assert start is not None
+
+    # determine start pipe shape
+    x, y = start
+    north, east, south, west = map(
+        tiles.get, [(x, y - 1), (x + 1, y), (x, y + 1), (x - 1, y)]
+    )
+
     possible = set("|-LJ7F")
     if north and north in "|7F":
         possible -= set("-7F")
@@ -50,55 +45,31 @@ def deduct(north, east, south, west):
     if west and west in "-LF":
         possible -= set("|LF")
 
-    return possible.pop()
+    assert len(possible) == 1
+    shape = possible.pop()
+
+    # walk the loop
+    path = [start]
+    prev, curr = start, next(neighbors(*start, shape))
+    while curr != start:
+        path.append(curr)
+        prev, curr = curr, (set(neighbors(*curr, tiles[curr])) - {prev}).pop()
+
+    return (path, tiles)
 
 
-def part_one(start, tiles):
-    shape = deduct(*tuple(tiles.get(t) for t in adjacent(*start)))
-
-    curr = next(neighbors(*start, shape))
-    seen = {start}
-    for i in itertools.count(start=1):
-        seen.add(curr)
-        for tile in neighbors(*curr, tiles[curr]):
-            if tile not in seen:
-                curr = tile
-                break
-        else:
-            break
-
-    return (i + 1) // 2
+def part_one(path, tiles):
+    return len(path) // 2
 
 
-def part_two(start, tiles):
-    shape = deduct(*tuple(tiles.get(t) for t in adjacent(*start)))
+def part_two(path, tiles):
+    v = [t for t in path if tiles[t] not in "|-"]
 
-    curr = next(neighbors(*start, shape))
-    seen, vertices = {start}, [] if shape in "|-" else [start]
-    for i in itertools.count(start=1):
-        seen.add(curr)
-        if tiles[curr] not in "|-":
-            vertices.append(curr)
-
-        for tile in neighbors(*curr, tiles[curr]):
-            if tile not in seen:
-                curr = tile
-                break
-        else:
-            break
+    # Shoelace formula: <https://en.wikipedia.org/wiki/Shoelace_formula>
+    area = abs(sum(a * d - b * c for (a, c), (b, d) in zip(v, v[1:] + v[:1]))) // 2
 
     # Pick's theorem: <https://en.wikipedia.org/wiki/Pick%27s_theorem>
-    # Shoelace forumla: <https://en.wikipedia.org/wiki/Shoelace_formula>
-    area = abs(
-        sum(
-            (vertices[i - 1][1] + vertices[i][1])
-            * (vertices[i - 1][0] - vertices[i][0])
-            for i, _ in enumerate(vertices)
-        )
-        // 2
-    )
-
-    return area - (i + 1) // 2 + 1
+    return area - len(path) // 2 + 1
 
 
 class Test:
