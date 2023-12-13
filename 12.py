@@ -13,38 +13,34 @@ def parse_input(puzzle_input):
 
 
 @functools.cache
-def solve(s, groups, curr=0):
-    if not s:
+def solve(record, groups, curr=0):
+    if record == "":
         return len(groups) == 0 and curr == 0
 
-    count = 0
-    if s[0] in "#?":
-        count += solve(s[1:], groups, curr + 1)
+    elif (groups and curr > groups[0]) or (not groups and curr):
+        return 0
 
-    if s[0] in ".?":
+    c, rest = record[0], record[1:]
+    total = 0
+
+    if c in "#?":
+        total += solve(rest, groups, curr + 1)
+
+    if c in ".?":
         if curr == 0:
-            count += solve(s[1:], groups)
-        elif groups and groups[0] == curr:
-            count += solve(s[1:], groups[1:])
+            total += solve(rest, groups)
+        elif curr == groups[0]:
+            total += solve(rest, groups[1:])
 
-    return count
+    return total
 
 
 def part_one(rows):
-    total = 0
-    for records, groups in rows:
-        total += solve(records + ".", groups)
-
-    return total
+    return sum(solve(r + ".", g) for r, g in rows)
 
 
 def part_two(rows):
-    total = 0
-    for records, groups in rows:
-        expanded = "?".join([records] * 5) + ".", groups * 5
-        total += solve(*expanded)
-
-    return total
+    return sum(solve("?".join([r] * 5) + ".", g * 5) for r, g in rows)
 
 
 class Test:
