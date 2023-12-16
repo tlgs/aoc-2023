@@ -14,4 +14,4 @@
 | 10  | [Pipe Maze](10.py)                         | Geometry            |
 | 11  | [Cosmic Expansion](11.py)                  | -                   |
 | 12  | [Hot Springs](12.py)                       | Dynamic Programming |
-| 13  | [Point of Incidence](13.py)                | Two Pointers        |
+| 13  | [Point of Incidence](13.py)                | -                   |
