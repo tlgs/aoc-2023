@@ -1,4 +1,3 @@
-import itertools
 import sys
 
 
@@ -10,56 +9,60 @@ def parse_input(puzzle_input):
     return (platform,)
 
 
-def part_one(platform):
-    platform = [inner[:] for inner in platform]
-
-    total, ymax = 0, len(platform)
+def tilt(platform):
+    top = [0] * len(platform[0])
     for y, row in enumerate(platform):
         for x, c in enumerate(row):
-            if c != "O":
+            if c == ".":
                 continue
 
-            i = y - 1
-            while i >= 0 and platform[i][x] == ".":
-                i -= 1
+            if c == "#":
+                top[x] = y + 1
+                continue
 
             platform[y][x] = "."
-            platform[i + 1][x] = "O"
+            platform[top[x]][x] = "O"
+            top[x] += 1
 
-            total += ymax - (i + 1)
+    return None
+
+
+def total_load(platform):
+    total = 0
+    for y, row in enumerate(platform[::-1], start=1):
+        for c in row:
+            total += (c == "O") * y
 
     return total
 
 
-def part_two(platform):
-    platform = [inner[:] for inner in platform]
+def part_one(platform):
+    platform = [row[:] for row in platform]
 
-    memory, rev = {}, {}
-    for i in itertools.count():
-        h = tuple(tuple(inner) for inner in platform)
-        if h in memory:
-            break
+    tilt(platform)
+    return total_load(platform)
 
-        memory[h], rev[i] = i, h
+
+def part_two(platform, target=1_000_000_000):
+    platform = [row[:] for row in platform]
+
+    i, found, memory = 0, False, {}
+    while i < target:
+        hash_ = tuple(tuple(row) for row in platform)
+        if hash_ in memory and not found:
+            found = True
+            length = i - memory[hash_]
+            i += length * ((target - i) // length)
+
+        memory[hash_] = i
 
         for _ in range(4):
-            for y, row in enumerate(platform):
-                for x, c in enumerate(row):
-                    if c != "O":
-                        continue
-
-                    j = y - 1
-                    while j >= 0 and platform[j][x] == ".":
-                        j -= 1
-
-                    platform[y][x] = "."
-                    platform[j + 1][x] = "O"
-
+            tilt(platform)
             platform = list(map(list, zip(*reversed(platform))))
 
-    offset = memory[h]
-    pos = (1000000000 - offset) % (i - offset) + offset
-    return sum(len(platform) - y for y, r in enumerate(rev[pos]) for c in r if c == "O")
+        i += 1
+
+    return total_load(platform)
 
 
 class Test:
