@@ -16,3 +16,4 @@
 | 12  | [Hot Springs](12.py)                       | Dynamic Programming |
 | 13  | [Point of Incidence](13.py)                | -                   |
 | 14  | [Parabolic Reflector Dish](14.py)          | Cycle-finding       |
+| 15  | [Lens Library](15.py)                      | -                   |
