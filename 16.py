@@ -1,84 +1,52 @@
 import sys
-from enum import Enum
 from functools import partial
-
-
-class Direction(Enum):
-    RIGHT = 1
-    LEFT = 2
-    UP = 3
-    DOWN = 4
-
-
-MIRROR = {
-    "\\": {
-        Direction.RIGHT: Direction.DOWN,
-        Direction.LEFT: Direction.UP,
-        Direction.UP: Direction.LEFT,
-        Direction.DOWN: Direction.RIGHT,
-    },
-    "/": {
-        Direction.RIGHT: Direction.UP,
-        Direction.LEFT: Direction.DOWN,
-        Direction.UP: Direction.RIGHT,
-        Direction.DOWN: Direction.LEFT,
-    },
-}
 
 
 def parse_input(puzzle_input):
     grid = {}
     for y, row in enumerate(puzzle_input.splitlines()):
         for x, c in enumerate(row):
-            grid[x, y] = c
+            grid[complex(x, y)] = c
 
     return (grid,)
 
 
-def part_one(grid, start=(0, 0, Direction.RIGHT)):
+def part_one(grid, start=(0j, 1)):
     seen, todo = set(), [start]
     while todo:
-        x, y, d = todo.pop()
-        seen.add((x, y, d))
+        p, d = todo.pop()
+        if p not in grid or (p, d) in seen:
+            continue
 
-        nxt = []
-        if grid[x, y] == "|" and d in {Direction.RIGHT, Direction.LEFT}:
-            nxt.append((x, y - 1, Direction.UP))
-            nxt.append((x, y + 1, Direction.DOWN))
+        seen.add((p, d))
 
-        elif grid[x, y] == "-" and d in {Direction.UP, Direction.DOWN}:
-            nxt.append((x - 1, y, Direction.LEFT))
-            nxt.append((x + 1, y, Direction.RIGHT))
+        match grid[p], d:
+            case ("|", 1) | ("|", -1):
+                todo.append((p - 1j, -1j))
+                todo.append((p + 1j, 1j))
+                continue
+            case ("-", 1j) | ("-", -1j):
+                todo.append((p - 1, -1))
+                todo.append((p + 1, 1))
+                continue
+            case "/", _:
+                d = -complex(d.imag, d.real)
+            case "\\", _:
+                d = complex(d.imag, d.real)
 
-        else:
-            if grid[x, y] in MIRROR:
-                d = MIRROR[grid[x, y]][d]
+        todo.append((p + d, d))
 
-            match d:
-                case Direction.RIGHT:
-                    nxt.append((x + 1, y, Direction.RIGHT))
-                case Direction.LEFT:
-                    nxt.append((x - 1, y, Direction.LEFT))
-                case Direction.UP:
-                    nxt.append((x, y - 1, Direction.UP))
-                case Direction.DOWN:
-                    nxt.append((x, y + 1, Direction.DOWN))
-
-        for x, y, d in nxt:
-            if (x, y) in grid and (x, y, d) not in seen:
-                todo.append((x, y, d))
-
-    return len({(x, y) for (x, y, _) in seen})
+    return len({p for p, _ in seen})
 
 
 def part_two(grid):
-    mx, my = max(x for x, _ in grid), max(y for _, y in grid)
+    mx, my = int(max(p.real for p in grid)), int(max(p.imag for p in grid))
 
     f = partial(part_one, grid)
-    right = max(f((0, y, Direction.RIGHT)) for y in range(0, my + 1))
-    left = max(f((mx, y, Direction.LEFT)) for y in range(0, my + 1))
-    up = max(f((x, my, Direction.UP)) for x in range(0, mx + 1))
-    down = max(f((x, 0, Direction.DOWN)) for x in range(0, mx + 1))
+    right = max(f((complex(0, y), 1)) for y in range(0, my + 1))
+    left = max(f((complex(mx, y), -1)) for y in range(0, my + 1))
+    up = max(f((complex(x, my), -1j)) for x in range(0, mx + 1))
+    down = max(f((complex(x, 0), 1j)) for x in range(0, mx + 1))
 
     return max(right, left, up, down)
 
