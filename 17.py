@@ -6,74 +6,56 @@ def parse_input(puzzle_input):
     grid = {}
     for y, line in enumerate(puzzle_input.splitlines()):
         for x, c in enumerate(line):
-            grid[(x, y)] = int(c)
+            grid[x, y] = int(c)
 
     return grid, (x, y)
 
 
-def neighbors_one(pos, inertia):
-    d, c = inertia
-    ds = {(1, 0), (-1, 0), (0, 1), (0, -1)} - {(-d[0], -d[1])}
-    if c == 3:
-        ds.remove(d)
-
-    for dx, dy in ds:
-        ni = (d, c + 1) if d == (dx, dy) else ((dx, dy), 1)
-        yield (pos[0] + dx, pos[1] + dy), ni
-
-
 def part_one(grid, target):
-    seen = set(((0, 0), ((1, 0), 0)))
-    todo = [(0, (0, 0), ((1, 0), 0))]
+    seen = set()
+    todo = [(0, (0, 0), (1, 0)), (0, (0, 0), (0, 1))]
     while todo:
-        cost, pos, inertia = heapq.heappop(todo)
+        cost, pos, d = heapq.heappop(todo)
+        if pos == target:
+            return cost
+        elif (pos, d) in seen:
+            continue
+        seen.add((pos, d))
 
-        for neighbor, ni in neighbors_one(pos, inertia):
-            if neighbor == target:
-                return cost + grid[target]
+        turns = {(1, 0), (-1, 0), (0, 1), (0, -1)} - {(d[0], d[1]), (-d[0], -d[1])}
+        for dx, dy in turns:
+            v = cost
+            for i in range(1, 4):
+                if (np := (pos[0] + dx * i, pos[1] + dy * i)) not in grid:
+                    break
 
-            if neighbor not in grid or (neighbor, ni) in seen:
-                continue
-
-            seen.add((neighbor, ni))
-            todo.append((cost + grid[neighbor], neighbor, ni))
+                v += grid[np]
+                heapq.heappush(todo, (v, np, (dx, dy)))
 
     raise RuntimeError
 
 
-def neighbors_two(pos, inertia):
-    d, c = inertia
-    if d is not None and c < 4:
-        yield (pos[0] + d[0], pos[1] + d[1]), (d, c + 1)
-        return
-
-    ds = {(1, 0), (-1, 0), (0, 1), (0, -1)}
-    if d is not None:
-        ds.remove((-d[0], -d[1]))
-
-    if c == 10:
-        ds.remove(d)
-
-    for dx, dy in ds:
-        ni = (d, c + 1) if d == (dx, dy) else ((dx, dy), 1)
-        yield (pos[0] + dx, pos[1] + dy), ni
-
-
 def part_two(grid, target):
-    seen = set(((0, 0), (None, None)))
-    todo = [(0, (0, 0), (None, None))]
+    seen = set()
+    todo = [(0, (0, 0), (1, 0)), (0, (0, 0), (0, 1))]
     while todo:
-        cost, pos, inertia = heapq.heappop(todo)
+        cost, pos, d = heapq.heappop(todo)
+        if pos == target:
+            return cost
+        elif (pos, d) in seen:
+            continue
+        seen.add((pos, d))
 
-        for neighbor, ni in neighbors_two(pos, inertia):
-            if neighbor == target:
-                return cost + grid[target]
+        turns = {(1, 0), (-1, 0), (0, 1), (0, -1)} - {(d[0], d[1]), (-d[0], -d[1])}
+        for dx, dy in turns:
+            v = cost
+            for i in range(1, 11):
+                if (np := (pos[0] + dx * i, pos[1] + dy * i)) not in grid:
+                    break
 
-            if neighbor not in grid or (neighbor, ni) in seen:
-                continue
-
-            seen.add((neighbor, ni))
-            todo.append((cost + grid[neighbor], neighbor, ni))
+                v += grid[np]
+                if i >= 4:
+                    heapq.heappush(todo, (v, np, (dx, dy)))
 
     raise RuntimeError
 
