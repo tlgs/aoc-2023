@@ -19,3 +19,4 @@
 | 15  | [Lens Library](15.py)                      | -                    |
 | 16  | [The Floor Will Be Lava](16.py)            | -                    |
 | 17  | [Clumsy Crucible](17.py)                   | Dijkstra's algorithm |
+| 18  | [Lavaduct Lagoon](18.py)                   | Geometry             |
