@@ -20,3 +20,4 @@
 | 16  | [The Floor Will Be Lava](16.py)            | -                    |
 | 17  | [Clumsy Crucible](17.py)                   | Dijkstra's algorithm |
 | 18  | [Lavaduct Lagoon](18.py)                   | Geometry             |
+| 19  | [Aplenty](19.py)                           | -                    |
