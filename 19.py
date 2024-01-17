@@ -1,14 +1,6 @@
 import math
 import re
 import sys
-from typing import NamedTuple
-
-
-class Part(NamedTuple):
-    x: int
-    m: int
-    a: int
-    s: int
 
 
 def parse_input(puzzle_input):
@@ -17,70 +9,71 @@ def parse_input(puzzle_input):
     workflows = {}
     for line in fst.splitlines():
         name, rest = line.split("{")
-
         *raw, last = rest[:-1].split(",")
-        rules = [tuple(r.split(":")) for r in raw]
-        rules.append((None, last))
 
-        workflows[name] = rules
+        rules = []
+        for r in raw:
+            cond, dest = r.split(":")
+            cat, op, n = cond[0], cond[1], int(cond[2:])
+            rules.append(((cat, op, n), dest))
 
-    parts = [Part(*map(int, re.findall(r"\d+", line))) for line in snd.splitlines()]
+        workflows[name] = rules + [(None, last)]
+
+    parts = []
+    for line in snd.splitlines():
+        values = map(int, re.findall(r"\d+", line))
+        parts.append(dict(zip("xmas", values)))
 
     return workflows, parts
 
 
-def do(part, workflow):
-    for cond, dest in workflow:
-        if cond is None:
-            return dest
-
-        cat, op, n = cond[0], cond[1], int(cond[2:])
-        if op == ">" and getattr(part, cat) > n:
-            return dest
-        elif op == "<" and getattr(part, cat) < n:
-            return dest
-
-    raise RuntimeError
-
-
 def part_one(workflows, parts):
-    total, end = 0, set("AR")
+    total = 0
     for part in parts:
         curr = "in"
-        while curr not in end:
-            curr = do(part, workflows[curr])
+        while curr not in {"A", "R"}:
+            for cond, dest in workflows[curr]:
+                if cond is None:
+                    curr = dest
+                    break
 
-        total += (curr == "A") * (part.x + part.m + part.a + part.s)
+                cat, op, n = cond
+                if (op == ">" and part[cat] > n) or (op == "<" and part[cat] < n):
+                    curr = dest
+                    break
+
+        total += (curr == "A") * sum(part.values())
 
     return total
 
 
 def part_two(workflows, _):
-    total = 0
-
-    todo = [("in", {"x": (1, 4001), "m": (1, 4001), "a": (1, 4001), "s": (1, 4001)})]
+    total, todo = 0, [("in", dict(zip("xmas", [(1, 4001)] * 4)))]
     while todo:
         curr, intervals = todo.pop()
         if curr == "R":
             continue
-        elif curr == "A":
-            total += math.prod(map(lambda t: t[1] - t[0], intervals.values()))
+        if curr == "A":
+            total += math.prod(b - a for a, b in intervals.values())
             continue
 
         for cond, dest in workflows[curr]:
-            nxt = intervals.copy()
-            if cond is not None:
-                cat, op, n = cond[0], cond[1], int(cond[2:])
-                a, b = intervals[cat]
-                match op:
-                    case ">":
-                        nxt[cat] = (max(a, n + 1), min(b, 4001))
-                        intervals[cat] = (max(a, 1), min(b, n + 1))
-                    case "<":
-                        nxt[cat] = (max(a, 1), min(b, n))
-                        intervals[cat] = (max(a, n), min(b, 4001))
+            forward = intervals.copy()
 
-            todo.append((dest, nxt))
+            if cond is None:
+                todo.append((dest, forward))
+                break
+
+            cat, op, n = cond
+            start, end = intervals[cat]
+            if op == ">":
+                forward[cat] = (max(start, n + 1), end)
+                intervals[cat] = (start, min(end, n + 1))
+            else:
+                forward[cat] = (start, min(end, n))
+                intervals[cat] = (max(start, n), end)
+
+            todo.append((dest, forward))
 
     return total
 
