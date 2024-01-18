@@ -1,8 +1,7 @@
-import itertools
+import collections
 import math
 import sys
 from abc import ABC, abstractmethod
-from collections import deque
 
 
 class Module(ABC):
@@ -65,7 +64,7 @@ def parse_input(puzzle_input):
 def part_one(modules):
     counts = {False: 0, True: 0}
     for _ in range(1000):
-        todo = deque([("button", "broadcaster", False)])
+        todo = collections.deque([("button", "broadcaster", False)])
         while todo:
             source, relay, signal = todo.popleft()
             counts[signal] += 1
@@ -78,12 +77,12 @@ def part_one(modules):
 
 
 def part_two(modules):
-    # &jm -> rx
-    deps = {k: None for k in modules["jm"].state}
+    deps = set(modules["jm"].state)  # there's only `&jm -> rx`
 
-    periods = {}
-    for i in itertools.count():
-        todo = deque([("button", "broadcaster", False)])
+    i, periods = 0, {}
+    while deps:
+        i += 1
+        todo = collections.deque([("button", "broadcaster", False)])
         while todo:
             source, relay, signal = todo.popleft()
             if relay not in modules:
@@ -91,14 +90,14 @@ def part_two(modules):
             todo.extend(modules[relay].process(source, signal))
 
             if signal and source in deps:
-                if deps[source] is None:
-                    deps[source] = i
-                elif source not in periods:
-                    periods[source] = i - deps[source]
-                    if len(periods) == len(deps):
-                        return math.lcm(*periods.values())
+                if source not in periods:
+                    periods[source] = i
+                    continue
 
-    raise RuntimeError
+                periods[source] = i - periods[source]
+                deps.remove(source)
+
+    return math.lcm(*periods.values())
 
 
 class Test:
@@ -121,9 +120,6 @@ broadcaster -> a
     def test_one(self):
         assert part_one(*parse_input(self.example1)) == 32000000
         assert part_one(*parse_input(self.example2)) == 11687500
-
-    def test_two(self):
-        assert True
 
 
 def main():
