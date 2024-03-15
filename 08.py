@@ -17,12 +17,10 @@ def parse_input(puzzle_input):
 
 
 def part_one(instructions, network):
-    i, curr = 0, "AAA"
+    curr = "AAA"
     for i, direction in enumerate(cycle(instructions), start=1):
         if (curr := network[curr][direction]) == "ZZZ":
-            break
-
-    return i
+            return i
 
 
 def part_two(instructions, network):
@@ -40,9 +38,8 @@ def part_two(instructions, network):
     for curr in filter(lambda node: node.endswith("A"), network):
         for i, direction in enumerate(cycle(instructions), start=1):
             if (curr := network[curr][direction]).endswith("Z"):
+                lengths.append(i)
                 break
-
-        lengths.append(i)
 
     return math.lcm(*lengths)
 
